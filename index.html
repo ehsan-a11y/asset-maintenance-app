@@ -297,43 +297,8 @@
     .btn-delete { background: linear-gradient(135deg, #b91c1c, #ef4444); color: #fff; }
     .btn-clear  { background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; }
     .btn-reset  { background: linear-gradient(135deg, #374151, #6b7280); color: #fff; }
-    .btn-export { background: linear-gradient(135deg, #5b21b6, #8b5cf6); color: #fff; }
+    .btn-export { background: linear-gradient(135deg, #065f46, #10b981); color: #fff; }
     .btn-import { background: linear-gradient(135deg, #0e7490, #06b6d4); color: #fff; }
-
-    /* ── Export dropdown ── */
-    .export-dropdown { position: relative; grid-column: 1 / -1; }
-    .export-menu {
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 0; right: 0;
-      background: var(--bg-card);
-      border: 1px solid var(--border-hi);
-      border-radius: 9px;
-      overflow: hidden;
-      display: none;
-      z-index: 500;
-      box-shadow: 0 -10px 28px rgba(0,0,0,0.5);
-    }
-    .export-menu.open { display: block; }
-    .export-menu button {
-      width: 100%;
-      background: none;
-      border: none;
-      color: var(--text);
-      padding: 10px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      transition: background 0.15s;
-      letter-spacing: 0.2px;
-    }
-    .export-menu button:not(:last-child) { border-bottom: 1px solid var(--border); }
-    .export-menu button:hover { background: var(--bg-panel); }
-    .export-menu button .menu-icon { font-size: 13px; width: 16px; text-align: center; }
 
     /* ── HW Checked Hero Card ── */
     .hero-card {
@@ -979,23 +944,13 @@
       <button class="btn btn-clear btn-full" onclick="clearForm()">
         <i class="fas fa-broom"></i> Clear
       </button>
-      <div class="export-dropdown" id="export-dd">
-        <button class="btn btn-export btn-full" onclick="toggleExportMenu(event)">
-          <i class="fas fa-file-export"></i> Export CSV / Excel <i class="fas fa-chevron-up" style="font-size:9px;margin-left:4px"></i>
-        </button>
-        <div class="export-menu" id="export-menu">
-          <button onclick="exportCSV();closeExportMenu()">
-            <span class="menu-icon"><i class="fas fa-file-csv" style="color:#8b5cf6"></i></span> Export as CSV
-          </button>
-          <button onclick="exportExcel();closeExportMenu()">
-            <span class="menu-icon"><i class="fas fa-file-excel" style="color:#10b981"></i></span> Export as Excel
-          </button>
-        </div>
-      </div>
-      <button class="btn btn-import btn-full" onclick="document.getElementById('import-input').click()">
-        <i class="fas fa-file-import"></i> Import CSV / Excel
+      <button class="btn btn-export btn-full" onclick="exportExcel()">
+        <i class="fas fa-file-excel"></i> Export Excel
       </button>
-      <input type="file" id="import-input" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
+      <button class="btn btn-import btn-full" onclick="document.getElementById('import-input').click()">
+        <i class="fas fa-file-import"></i> Import Excel
+      </button>
+      <input type="file" id="import-input" accept=".xlsx,.xls" onchange="importFile(event)">
     </div>
 
 
@@ -1232,9 +1187,6 @@ function init() {
   populateDropdownsFromSettings();
   populateDateFilter();
   applyAndRender();
-  document.addEventListener('click', e => {
-    if (!e.target.closest('#export-dd')) closeExportMenu();
-  });
 }
 
 // ═══════════════════════════════
@@ -1558,29 +1510,6 @@ function resetFilters() {
 }
 
 // ═══════════════════════════════
-// Export dropdown toggle
-// ═══════════════════════════════
-function toggleExportMenu(e) {
-  e.stopPropagation();
-  document.getElementById('export-menu').classList.toggle('open');
-}
-function closeExportMenu() {
-  document.getElementById('export-menu').classList.remove('open');
-}
-
-// ═══════════════════════════════
-// Export CSV
-// ═══════════════════════════════
-function exportCSV() {
-  const recs = getRecords();
-  if (!recs.length) { toast('Nothing to export!','warning'); return; }
-  const hdr = ['Date','Site Name','HW Type','HW Version','Node ID','Status','Remarks'];
-  const csv = [hdr, ...recs].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  download(csv, 'Asset_Maintenance.csv', 'text/csv');
-  toast('Exported to CSV!','success');
-}
-
-// ═══════════════════════════════
 // Export Excel
 // ═══════════════════════════════
 function exportExcel() {
@@ -1605,38 +1534,20 @@ function exportExcel() {
 }
 
 // ═══════════════════════════════
-// Import CSV / Excel
+// Import Excel
 // ═══════════════════════════════
 function importFile(evt) {
   const file = evt.target.files[0];
   if (!file) return;
   const ext = file.name.split('.').pop().toLowerCase();
 
-  if (ext === 'csv') {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
-      const rows  = lines.slice(1).map(l =>
-        l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"'))
-      ).filter(r => r.length >= 7);
-
-      if (!rows.length) { toast('No valid rows found in CSV!','error'); return; }
-      const merged = [...getRecords(), ...rows];
-      saveRecords(merged);
-      populateDateFilter();
-      applyAndRender();
-      toast(`Imported ${rows.length} record(s)!`,'success');
-    };
-    reader.readAsText(file);
-
-  } else if (ext === 'xlsx' || ext === 'xls') {
+  if (ext === 'xlsx' || ext === 'xls') {
     const reader = new FileReader();
     reader.onload = e => {
       const data = new Uint8Array(e.target.result);
       const wb   = XLSX.read(data, { type:'array' });
       const ws   = wb.Sheets[wb.SheetNames[0]];
       const all  = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-      // Skip header row, keep rows with at least 7 columns
       const rows = all.slice(1)
         .filter(r => r.length >= 7 && r.some(v => String(v).trim()))
         .map(r => r.slice(0, 7).map(v => String(v ?? '').trim()));
@@ -1649,23 +1560,11 @@ function importFile(evt) {
       toast(`Imported ${rows.length} record(s)!`,'success');
     };
     reader.readAsArrayBuffer(file);
-
   } else {
-    toast('Unsupported file type. Use .csv, .xlsx or .xls','error');
+    toast('Please select an Excel file (.xlsx or .xls)','error');
   }
 
   evt.target.value = '';
-}
-
-// ═══════════════════════════════
-// Download helper
-// ═══════════════════════════════
-function download(content, filename, type) {
-  const blob = new Blob([content], {type});
-  const url  = URL.createObjectURL(blob);
-  const a    = Object.assign(document.createElement('a'), {href:url, download:filename});
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 // ═══════════════════════════════
