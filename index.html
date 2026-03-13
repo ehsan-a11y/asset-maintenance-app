@@ -6,6 +6,7 @@
   <title>Asset Maintenance System</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -297,6 +298,7 @@
     .btn-clear  { background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; }
     .btn-reset  { background: linear-gradient(135deg, #374151, #6b7280); color: #fff; }
     .btn-export { background: linear-gradient(135deg, #5b21b6, #8b5cf6); color: #fff; }
+    .btn-excel  { background: linear-gradient(135deg, #065f46, #10b981); color: #fff; }
     .btn-import { background: linear-gradient(135deg, #0e7490, #06b6d4); color: #fff; }
 
     /* ── HW Checked Hero Card ── */
@@ -943,13 +945,16 @@
       <button class="btn btn-clear btn-full" onclick="clearForm()">
         <i class="fas fa-broom"></i> Clear
       </button>
-      <button class="btn btn-export btn-full" onclick="exportCSV()">
-        <i class="fas fa-file-csv"></i> Export CSV
+      <button class="btn btn-export" onclick="exportCSV()">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+      <button class="btn btn-excel" onclick="exportExcel()">
+        <i class="fas fa-file-excel"></i> Excel
       </button>
       <button class="btn btn-import btn-full" onclick="document.getElementById('import-input').click()">
-        <i class="fas fa-file-import"></i> Import CSV
+        <i class="fas fa-file-import"></i> Import CSV / Excel
       </button>
-      <input type="file" id="import-input" accept=".csv" onchange="importCSV(event)">
+      <input type="file" id="import-input" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
     </div>
 
 
@@ -1521,28 +1526,79 @@ function exportCSV() {
 }
 
 // ═══════════════════════════════
-// Import CSV
+// Export Excel
 // ═══════════════════════════════
-function importCSV(evt) {
+function exportExcel() {
+  const recs = getRecords();
+  if (!recs.length) { toast('Nothing to export!','warning'); return; }
+  const hdr = ['Date','Site Name','HW Type','HW Version','Node ID','Status','Remarks'];
+  const ws  = XLSX.utils.aoa_to_sheet([hdr, ...recs]);
+
+  // Column widths
+  ws['!cols'] = [10,16,12,18,14,14,24].map(w => ({ wch: w }));
+
+  // Header row styling (bold)
+  hdr.forEach((_, ci) => {
+    const cell = ws[XLSX.utils.encode_cell({ r:0, c:ci })];
+    if (cell) cell.s = { font:{ bold:true }, fill:{ fgColor:{ rgb:'1A2233' } } };
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Asset Maintenance');
+  XLSX.writeFile(wb, 'Asset_Maintenance.xlsx');
+  toast('Exported to Excel!','success');
+}
+
+// ═══════════════════════════════
+// Import CSV / Excel
+// ═══════════════════════════════
+function importFile(evt) {
   const file = evt.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
-    const rows  = lines.slice(1).map(l =>
-      l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"'))
-    ).filter(r => r.length >= 7);
+  const ext = file.name.split('.').pop().toLowerCase();
 
-    if (!rows.length) { toast('No valid rows found in CSV!','error'); return; }
+  if (ext === 'csv') {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+      const rows  = lines.slice(1).map(l =>
+        l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"'))
+      ).filter(r => r.length >= 7);
 
-    const existing = getRecords();
-    const merged   = [...existing, ...rows];
-    saveRecords(merged);
-    populateDateFilter();
-    applyAndRender();
-    toast(`Imported ${rows.length} record(s)!`,'success');
-  };
-  reader.readAsText(file);
+      if (!rows.length) { toast('No valid rows found in CSV!','error'); return; }
+      const merged = [...getRecords(), ...rows];
+      saveRecords(merged);
+      populateDateFilter();
+      applyAndRender();
+      toast(`Imported ${rows.length} record(s)!`,'success');
+    };
+    reader.readAsText(file);
+
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = new Uint8Array(e.target.result);
+      const wb   = XLSX.read(data, { type:'array' });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const all  = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      // Skip header row, keep rows with at least 7 columns
+      const rows = all.slice(1)
+        .filter(r => r.length >= 7 && r.some(v => String(v).trim()))
+        .map(r => r.slice(0, 7).map(v => String(v ?? '').trim()));
+
+      if (!rows.length) { toast('No valid rows found in Excel file!','error'); return; }
+      const merged = [...getRecords(), ...rows];
+      saveRecords(merged);
+      populateDateFilter();
+      applyAndRender();
+      toast(`Imported ${rows.length} record(s)!`,'success');
+    };
+    reader.readAsArrayBuffer(file);
+
+  } else {
+    toast('Unsupported file type. Use .csv, .xlsx or .xls','error');
+  }
+
   evt.target.value = '';
 }
 
