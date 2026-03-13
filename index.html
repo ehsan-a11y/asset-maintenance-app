@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Maintenance System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #080d14;
+      --bg-dark:    #0d1117;
+      --bg-panel:   #111827;
+      --bg-card:    #1a2233;
+      --bg-input:   #0d1117;
+      --border:     #1f2d42;
+      --border-hi:  #2a3f5f;
+      --text:       #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim:   #334155;
+      --accent:     #3b82f6;
+      --accent-dim: rgba(59,130,246,0.15);
+      --green:      #22c55e;
+      --orange:     #f59e0b;
+      --red:        #ef4444;
+      --purple:     #a855f7;
+      --teal:       #14b8a6;
+      --indigo:     #6366f1;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      height: 52px;
+      min-height: 52px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      z-index: 100;
+      box-shadow: 0 1px 20px rgba(0,0,0,0.4);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: white;
+      box-shadow: 0 0 14px rgba(59,130,246,0.4);
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .header-title span { color: var(--accent); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50%      { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+    }
+
+    /* ── Layout ── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Panels ── */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .panel::-webkit-scrollbar { width: 4px; }
+    .panel::-webkit-scrollbar-track { background: transparent; }
+    .panel::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+    .left-panel {
+      width: 270px;
+      min-width: 270px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 12px;
+      gap: 10px;
+    }
+
+    /* ── Dashboard Row ── */
+    .dash-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .dash-row .card {
+      margin-bottom: 0;
+    }
+
+    .dash-hero {
+      min-width: 140px;
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .dash-vbars {
+      flex: 1;
+    }
+
+    .dash-hbars {
+      flex: 1.2;
+    }
+
+    .right-panel {
+      flex: 1;
+      background: var(--bg-deep);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-title i { color: var(--accent); font-size: 11px; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 7px; }
+
+    .form-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      color: var(--text);
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    select.form-control {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    select.form-control option { background: #1a2233; }
+
+    input[type="date"].form-control {
+      color-scheme: dark;
+      cursor: pointer;
+    }
+
+    input[type="date"].form-control::-webkit-calendar-picker-indicator {
+      filter: invert(0.6) sepia(1) saturate(3) hue-rotate(180deg);
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+
+    /* ── Buttons ── */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      padding: 8px 6px;
+      border: none;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.15s;
+    }
+
+    .btn:hover::after { background: rgba(255,255,255,0.08); }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
+    .btn:active { transform: translateY(0); box-shadow: none; }
+
+    .btn-full { grid-column: 1 / -1; }
+
+    .btn-submit { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; }
+    .btn-update { background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff; }
+    .btn-delete { background: linear-gradient(135deg, #b91c1c, #ef4444); color: #fff; }
+    .btn-clear  { background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; }
+    .btn-reset  { background: linear-gradient(135deg, #374151, #6b7280); color: #fff; }
+    .btn-export { background: linear-gradient(135deg, #5b21b6, #8b5cf6); color: #fff; }
+    .btn-import { background: linear-gradient(135deg, #0e7490, #06b6d4); color: #fff; }
+
+    /* ── HW Checked Hero Card ── */
+    .hero-card {
+      background: linear-gradient(135deg, #0f1f4a 0%, #1a3a8a 60%, #1e40af 100%);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 12px;
+      padding: 12px 10px;
+      margin-bottom: 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(99,130,246,0.15), transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; left: -30px;
+      width: 90px; height: 90px;
+      background: radial-gradient(circle, rgba(59,130,246,0.1), transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero-sub {
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .hero-count {
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      transition: transform 0.15s, opacity 0.15s;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 0 30px rgba(59,130,246,0.5);
+    }
+
+    .hero-count.pop {
+      transform: scale(0.82);
+      opacity: 0.4;
+    }
+
+    .hero-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      margin-top: 5px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Vertical Bars ── */
+    .vbars-wrap {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      height: 130px;
+      padding: 0 4px;
+    }
+
+    .vbar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .vbar-count {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .vbar-track {
+      width: 38px;
+      height: 100px;
+      background: var(--bg-input);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      border: 1px solid var(--border);
+    }
+
+    .vbar-fill {
+      width: 100%;
+      border-radius: 6px;
+      transition: height 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+      min-height: 0;
+    }
+
+    .vbar-name {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 44px;
+      line-height: 1.2;
+    }
+
+    /* ── Donut Chart ── */
+    .donut-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .donut-svg-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .donut-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .donut-total {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .donut-total-label {
+      font-size: 8px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+    }
+
+    .donut-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px 12px;
+    }
+
+    .donut-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .donut-legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .donut-legend-name {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .filter-bar-group .form-label {
+      white-space: nowrap;
+    }
+
+    .filter-bar-search {
+      flex: 1.4;
+      min-width: 130px;
+    }
+
+    .filter-bar-search .form-control {
+      padding-left: 30px;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* ── Table Section ── */
+    .table-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .table-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count-badge {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 20px;
+      padding: 2px 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      flex: 1;
+      overflow: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+    .table-wrap::-webkit-scrollbar-track { background: var(--bg-deep); }
+    .table-wrap::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    thead th {
+      background: var(--bg-panel);
+      padding: 10px 14px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    thead th:first-child { width: 40px; text-align: center; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--bg-panel);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody tr.selected {
+      background: rgba(59,130,246,0.1) !important;
+      outline: 1px solid rgba(59,130,246,0.35);
+      outline-offset: -1px;
+    }
+
+    tbody td {
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    tbody td:first-child {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 11px;
+    }
+
+    /* ── Status Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-issued1  { background: rgba(29,78,216,0.25); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-issued2  { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-scrap    { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+    .badge-office   { background: rgba(100,116,139,0.2); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 22px; right: 22px;
+      padding: 11px 18px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(80px) scale(0.95);
+      opacity: 0;
+      transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateY(0) scale(1); opacity: 1; }
+    .t-success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .t-error   { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+    .t-warning { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .t-info    { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 20px;
+      color: var(--text-dim);
+      gap: 8px;
+    }
+
+    .empty-state i { font-size: 36px; }
+    .empty-state p { font-size: 13px; font-weight: 500; }
+
+    /* ── Hidden file input ── */
+    #import-input { display: none; }
+
+    /* ── Settings Gear Button ── */
+    .settings-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 3px 6px;
+      border-radius: 5px;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+    .settings-btn:hover {
+      color: var(--accent);
+      background: var(--accent-dim);
+      transform: rotate(45deg);
+    }
+
+    /* ── Settings Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hi);
+      border-radius: 14px;
+      width: 440px;
+      max-height: 78vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      transform: scale(0.94) translateY(10px);
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .modal-overlay.open .modal-box {
+      transform: scale(1) translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .modal-header-left { display: flex; align-items: center; gap: 8px; }
+    .modal-header-left i { color: var(--accent); }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--bg-card); color: var(--text); }
+    .modal-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 8px 12px 0;
+    }
+    .modal-tab {
+      padding: 7px 13px;
+      font-size: 11px;
+      font-weight: 600;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 7px 7px 0 0;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .modal-tab:hover { color: var(--text); background: var(--bg-card); }
+    .modal-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--bg-card); }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-body::-webkit-scrollbar { width: 4px; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+    .settings-add-row {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+    .settings-add-row input { flex: 1; }
+    .settings-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .settings-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 8px 5px 13px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+    .settings-chip:hover { border-color: var(--border-hi); }
+    .chip-del {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      font-size: 11px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .chip-del:hover { background: rgba(239,68,68,0.2); color: var(--red); }
+    .modal-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* ── Glow lines decoration ── */
+    .glow-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      border-radius: 1px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-icon"><i class="fas fa-microchip"></i></div>
+    <div>
+      <div class="header-title">Asset <span>Maintenance</span> System</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-date">
+      <div class="status-dot"></div>
+      <i class="far fa-calendar-alt"></i>
+      <span id="hdr-date">—</span>
+    </div>
+  </div>
+</header>
+
+<!-- ─── App Body ─── -->
+<div class="app-body">
+
+  <!-- ════════════ LEFT PANEL ════════════ -->
+  <div class="panel left-panel">
+
+    <!-- Form -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;align-items:center">
+        <span><i class="fas fa-pen-to-square"></i> Node Detail</span>
+        <button class="settings-btn" onclick="openSettings()" title="Manage dropdown values"><i class="fas fa-gear"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" id="f-date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Site Name</label>
+        <select id="f-site" class="form-control">
+          <option>ACC_Jubail</option>
+          <option>Office</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">HW Type</label>
+        <select id="f-hw-type" class="form-control">
+          <option>Knob</option>
+          <option>Anchor</option>
+          <option>Gateway</option>
+          <option>Fob</option>
+          <option>ID_Card</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">HW Version</label>
+        <select id="f-hw-version" class="form-control">
+          <option>Asset v3.6(Prod)</option>
+          <option>Asset v3.6(Safe)</option>
+          <option>Anchor_v2.2</option>
+          <option>Anchor_v2.3</option>
+          <option>Anchor_v2.4</option>
+          <option>RPI_3</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Node ID</label>
+        <input type="text" id="f-node" class="form-control" placeholder="Enter Node ID…"
+               oninput="applyAndRender()"
+               onkeydown="onNodeKeydown(event)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select id="f-status" class="form-control">
+          <option>Issued_1</option>
+          <option>Issued_2</option>
+          <option>Scrap</option>
+          <option>Used in Office</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Remarks</label>
+        <input type="text" id="f-remarks" class="form-control" placeholder="Enter remarks…">
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-grid">
+      <button class="btn btn-submit btn-full" onclick="submitForm()">
+        <i class="fas fa-circle-plus"></i> Submit
+      </button>
+      <button class="btn btn-update" onclick="updateRecord()">
+        <i class="fas fa-pen"></i> Update
+      </button>
+      <button class="btn btn-delete" onclick="deleteRecord()">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+      <button class="btn btn-clear btn-full" onclick="clearForm()">
+        <i class="fas fa-broom"></i> Clear
+      </button>
+      <button class="btn btn-export btn-full" onclick="exportCSV()">
+        <i class="fas fa-file-csv"></i> Export CSV
+      </button>
+      <button class="btn btn-import btn-full" onclick="document.getElementById('import-input').click()">
+        <i class="fas fa-file-import"></i> Import CSV
+      </button>
+      <input type="file" id="import-input" accept=".csv" onchange="importCSV(event)">
+    </div>
+
+
+  </div>
+  <!-- end left-panel -->
+
+  <!-- ════════════ RIGHT PANEL ════════════ -->
+  <div class="right-panel">
+
+    <!-- Dashboard Row -->
+    <div class="dash-row">
+
+      <!-- Hero count -->
+      <div class="dash-hero">
+        <div class="hero-card">
+          <div class="hero-sub">Total HW Checked</div>
+          <div class="hero-count" id="hero-num">0</div>
+          <div class="hero-label">Current view</div>
+        </div>
+      </div>
+
+      <!-- HW Type vertical bars -->
+      <div class="card dash-vbars">
+        <div class="card-title"><i class="fas fa-microchip"></i> HW Type</div>
+        <div class="vbars-wrap" id="vbars-wrap"></div>
+      </div>
+
+      <!-- Status Breakdown -->
+      <div class="card dash-hbars">
+        <div class="card-title"><i class="fas fa-circle-half-stroke"></i> Status Breakdown</div>
+        <div id="hbars-wrap"></div>
+      </div>
+
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-bar-group">
+        <label class="form-label"><i class="fas fa-calendar-days" style="font-size:9px"></i> Date</label>
+        <select id="fl-date" class="form-control" onchange="applyAndRender()">
+          <option value="All">All</option>
+        </select>
+      </div>
+      <div class="filter-bar-group">
+        <label class="form-label"><i class="fas fa-location-dot" style="font-size:9px"></i> Site Name</label>
+        <select id="fl-site" class="form-control" onchange="applyAndRender()">
+          <option value="All">All</option>
+          <option>ACC_Jubail</option>
+          <option>Office</option>
+        </select>
+      </div>
+      <div class="filter-bar-group">
+        <label class="form-label"><i class="fas fa-microchip" style="font-size:9px"></i> HW Type</label>
+        <select id="fl-hw-type" class="form-control" onchange="applyAndRender()">
+          <option value="All">All</option>
+          <option>Knob</option>
+          <option>Anchor</option>
+          <option>Gateway</option>
+          <option>Fob</option>
+          <option>ID_Card</option>
+        </select>
+      </div>
+      <div class="filter-bar-group">
+        <label class="form-label"><i class="fas fa-code-branch" style="font-size:9px"></i> HW Version</label>
+        <select id="fl-hw-version" class="form-control" onchange="applyAndRender()">
+          <option value="All">All</option>
+          <option>Asset v3.6(Prod)</option>
+          <option>Asset v3.6(Safe)</option>
+          <option>Anchor_v2.2</option>
+          <option>Anchor_v2.3</option>
+          <option>Anchor_v2.4</option>
+          <option>RPI_3</option>
+        </select>
+      </div>
+      <div class="filter-bar-group">
+        <label class="form-label"><i class="fas fa-circle-half-stroke" style="font-size:9px"></i> Status</label>
+        <select id="fl-status" class="form-control" onchange="applyAndRender()">
+          <option value="All">All</option>
+          <option>Issued_1</option>
+          <option>Issued_2</option>
+          <option>Scrap</option>
+          <option>Used in Office</option>
+        </select>
+      </div>
+      <div class="filter-bar-group filter-bar-search">
+        <label class="form-label"><i class="fas fa-magnifying-glass" style="font-size:9px"></i> Node ID Search</label>
+        <div class="search-wrap">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" id="fl-node" class="form-control" placeholder="Live search…" oninput="applyAndRender()">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;flex-shrink:0">
+        <button class="btn btn-reset" onclick="resetFilters()" style="height:31px;padding:0 14px;white-space:nowrap">
+          <i class="fas fa-rotate-left"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <div class="table-head">
+      <div class="table-title">
+        <i class="fas fa-database" style="color:var(--accent)"></i>
+        Saved Records
+        <span class="count-badge" id="rec-count">0</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Site Name</th>
+            <th>HW Type</th>
+            <th>HW Version</th>
+            <th>Node ID</th>
+            <th>Status</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+  <!-- end right-panel -->
+
+</div>
+<!-- end app-body -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ─── Settings Modal ─── -->
+<div class="modal-overlay" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <i class="fas fa-gear"></i>
+        <span>Dropdown Settings</span>
+      </div>
+      <button class="modal-close" onclick="closeSettings()" title="Close"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-tabs" id="settings-tabs"></div>
+    <div class="modal-body" id="settings-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-reset" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-submit" onclick="applySettings()"><i class="fas fa-check"></i> Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── JavaScript ─────────────── -->
+<script>
+// ═══════════════════════════════
+// Config
+// ═══════════════════════════════
+const STORE_KEY = 'asset_maint_v2';
+
+const HW_TYPES = ['Knob','Anchor','Gateway','Fob','ID_Card'];
+
+const HW_COLORS = {
+  Knob:    '#22c55e',
+  Anchor:  '#a855f7',
+  Gateway: '#3b82f6',
+  Fob:     '#14b8a6',
+  ID_Card: '#f59e0b'
+};
+
+const STATUS_LIST = ['Issued_1','Issued_2','Scrap','Used in Office'];
+
+const STATUS_COLORS = {
+  'Issued_1':       '#2563eb',
+  'Issued_2':       '#f59e0b',
+  'Scrap':          '#ef4444',
+  'Used in Office': '#64748b'
+};
+
+// ═══════════════════════════════
+// State
+// ═══════════════════════════════
+let selectedIdx        = null;  // index into filteredRows
+let filteredRows       = [];
+let filteredOrigIdx    = [];    // parallel array: original index in allRecords
+
+// ═══════════════════════════════
+// Storage helpers
+// ═══════════════════════════════
+function getRecords()       { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }
+function saveRecords(arr)   { localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
+
+// ═══════════════════════════════
+// Date helpers
+// ═══════════════════════════════
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_MAP = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+
+// "DD-Mon-YY" used for storage display
+function fmtDate(d) {
+  return `${String(d.getDate()).padStart(2,'0')}-${MONTHS[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`;
+}
+
+// Today as "YYYY-MM-DD" for the date input
+function todayInputStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// "YYYY-MM-DD" → "DD-Mon-YY"  (for saving)
+function inputToDisplay(val) {
+  if (!val) return '';
+  const [y, m, dd] = val.split('-');
+  return `${dd}-${MONTHS[parseInt(m)-1]}-${y.slice(-2)}`;
+}
+
+// "DD-Mon-YY" → "YYYY-MM-DD"  (for loading into picker)
+function displayToInput(val) {
+  if (!val) return '';
+  const parts = val.split('-');
+  if (parts.length !== 3) return '';
+  const [dd, mon, yy] = parts;
+  const year = parseInt(yy) < 50 ? `20${yy}` : `19${yy}`;
+  return `${year}-${MONTH_MAP[mon] || '01'}-${dd.padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════
+// Init
+// ═══════════════════════════════
+function init() {
+  document.getElementById('hdr-date').textContent = fmtDate(new Date());
+  document.getElementById('f-date').value = todayInputStr();
+  buildVBars();
+  buildHBars();
+  populateDropdownsFromSettings();
+  populateDateFilter();
+  applyAndRender();
+}
+
+// ═══════════════════════════════
+// Build dashboard widgets
+// ═══════════════════════════════
+function buildVBars() {
+  const wrap = document.getElementById('vbars-wrap');
+  wrap.innerHTML = HW_TYPES.map(hw => `
+    <div class="vbar-col">
+      <span class="vbar-count" id="vc-${hw}" style="color:${HW_COLORS[hw]}">0</span>
+      <div class="vbar-track">
+        <div class="vbar-fill" id="vb-${hw}" style="background:${HW_COLORS[hw]};height:0%"></div>
+      </div>
+      <span class="vbar-name">${hw}</span>
+    </div>
+  `).join('');
+}
+
+function buildHBars() {
+  const wrap = document.getElementById('hbars-wrap');
+  const r = 42, circ = +(2 * Math.PI * r).toFixed(2);
+
+  const segs = STATUS_LIST.map(s => {
+    const key = s.replace(/\s+/g,'_');
+    return `<circle id="dseg-${key}" cx="50" cy="50" r="${r}" fill="none"
+      stroke="${STATUS_COLORS[s]}" stroke-width="13"
+      stroke-dasharray="0 ${circ}" stroke-dashoffset="0"
+      transform="rotate(-90 50 50)"
+      style="transition:stroke-dasharray 0.7s cubic-bezier(0.34,1.56,0.64,1),stroke-dashoffset 0.7s cubic-bezier(0.34,1.56,0.64,1)"/>`;
+  }).join('');
+
+  const texts = STATUS_LIST.map(s => {
+    const key = s.replace(/\s+/g,'_');
+    return `<text id="dtxt-${key}" x="50" y="50"
+      fill="white" font-size="7" font-weight="800"
+      text-anchor="middle" dominant-baseline="middle"
+      opacity="0" style="pointer-events:none;transition:opacity 0.3s"/>`;
+  }).join('');
+
+  const legend = STATUS_LIST.map(s => `
+    <div class="donut-legend-item">
+      <div class="donut-legend-dot" style="background:${STATUS_COLORS[s]}"></div>
+      <span class="donut-legend-name">${s}</span>
+    </div>`).join('');
+
+  wrap.innerHTML = `
+    <div class="donut-wrap">
+      <div class="donut-svg-wrap">
+        <svg viewBox="0 0 100 100" width="150" height="150">
+          <circle cx="50" cy="50" r="${r}" fill="none" stroke="#0d1117" stroke-width="13"/>
+          ${segs}
+          ${texts}
+        </svg>
+        <div class="donut-center">
+          <div class="donut-total" id="donut-total">0</div>
+          <div class="donut-total-label">Total</div>
+        </div>
+      </div>
+      <div class="donut-legend">${legend}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════
+// Populate date filter dropdown
+// ═══════════════════════════════
+function populateDateFilter() {
+  const recs  = getRecords();
+  const dates = [...new Set(recs.map(r => r[0]))].sort().reverse();
+  const sel   = document.getElementById('fl-date');
+  const prev  = sel.value;
+  sel.innerHTML = '<option value="All">All</option>' +
+    dates.map(d => `<option>${d}</option>`).join('');
+  sel.value = dates.includes(prev) ? prev : 'All';
+}
+
+// ═══════════════════════════════
+// Main render pipeline
+// ═══════════════════════════════
+function applyAndRender() {
+  const recs = getRecords();
+  const g    = id => document.getElementById(id).value;
+
+  // Wrap each record with its original index so delete/update never lose track
+  let indexed = recs.map((r, i) => ({ r, i }));
+
+  if (g('fl-date')       !== 'All') indexed = indexed.filter(({r}) => r[0] === g('fl-date'));
+  if (g('fl-site')       !== 'All') indexed = indexed.filter(({r}) => r[1] === g('fl-site'));
+  if (g('fl-hw-type')    !== 'All') indexed = indexed.filter(({r}) => r[2] === g('fl-hw-type'));
+  if (g('fl-hw-version') !== 'All') indexed = indexed.filter(({r}) => r[3] === g('fl-hw-version'));
+  if (g('fl-status')     !== 'All') indexed = indexed.filter(({r}) => r[5] === g('fl-status'));
+
+  const nd     = g('fl-node').trim().toLowerCase();
+  const formNd = document.getElementById('f-node').value.trim().toLowerCase();
+  if (nd)     indexed = indexed.filter(({r}) => String(r[4]).toLowerCase().includes(nd));
+  if (formNd) indexed = indexed.filter(({r}) => String(r[4]).toLowerCase().includes(formNd));
+
+  indexed.reverse();  // newest first
+
+  filteredRows    = indexed.map(({r}) => r);
+  filteredOrigIdx = indexed.map(({i}) => i);
+
+  renderTable(filteredRows);
+  updateDashboard(filteredRows);
+  selectedIdx = null;
+}
+
+// ═══════════════════════════════
+// Table render
+// ═══════════════════════════════
+function badgeClass(s) {
+  return { 'Issued_1':'badge-issued1','Issued_2':'badge-issued2',
+           'Scrap':'badge-scrap','Used in Office':'badge-office' }[s] || '';
+}
+
+function hwStyle(hw) {
+  return `color:${HW_COLORS[hw] || '#e2e8f0'};font-weight:700`;
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('tbl-body');
+  document.getElementById('rec-count').textContent = rows.length;
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `
+      <tr><td colspan="8">
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>No records found</p>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r,i) => `
+    <tr id="row-${i}" onclick="selectRow(${i})">
+      <td>${i+1}</td>
+      <td>${r[0]||''}</td>
+      <td style="color:var(--text)">${r[1]||''}</td>
+      <td><span style="${hwStyle(r[2])}">${r[2]||''}</span></td>
+      <td>${r[3]||''}</td>
+      <td style="color:var(--text);font-weight:600">${r[4]||''}</td>
+      <td><span class="badge ${badgeClass(r[5])}">${r[5]||''}</span></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${r[6]||''}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════
+// Row select → populate form
+// ═══════════════════════════════
+function selectRow(i) {
+  document.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('selected'));
+  selectedIdx = i;
+  const el = document.getElementById(`row-${i}`);
+  if (el) el.classList.add('selected');
+
+  const r = filteredRows[i];
+  document.getElementById('f-date').value       = displayToInput(r[0]||'');
+  document.getElementById('f-site').value       = r[1]||'';
+  document.getElementById('f-hw-type').value    = r[2]||'';
+  document.getElementById('f-hw-version').value = r[3]||'';
+  document.getElementById('f-node').value       = r[4]||'';
+  document.getElementById('f-status').value     = r[5]||'';
+  document.getElementById('f-remarks').value    = r[6]||'';
+}
+
+// ═══════════════════════════════
+// Dashboard update
+// ═══════════════════════════════
+function updateDashboard(rows) {
+  // Hero count
+  animHero(rows.length);
+
+  // Vertical bars
+  const maxHw = Math.max(1, ...HW_TYPES.map(hw => rows.filter(r => r[2]===hw).length));
+  HW_TYPES.forEach(hw => {
+    const n = rows.filter(r => r[2]===hw).length;
+    document.getElementById(`vc-${hw}`).textContent = n;
+    document.getElementById(`vb-${hw}`).style.height = ((n/maxHw)*100) + '%';
+  });
+
+  // Donut chart
+  const total = rows.length;
+  const r = 42, circ = 2 * Math.PI * r;
+  const gap = total > 1 ? 2 : 0;
+  let offset = 0;
+  STATUS_LIST.forEach(s => {
+    const n   = rows.filter(r => r[5]===s).length;
+    const key = s.replace(/\s+/g,'_');
+    const arc = total > 0 ? Math.max(0, (n / total) * circ - gap) : 0;
+
+    // Segment arc
+    const seg = document.getElementById(`dseg-${key}`);
+    if (seg) {
+      seg.setAttribute('stroke-dasharray', `${arc.toFixed(2)} ${circ.toFixed(2)}`);
+      seg.setAttribute('stroke-dashoffset', (-offset).toFixed(2));
+    }
+
+    // Label on segment midpoint
+    const txt = document.getElementById(`dtxt-${key}`);
+    if (txt) {
+      if (arc > 16 && n > 0) {
+        const midAngle = -Math.PI / 2 + (offset + arc / 2) / r;
+        txt.setAttribute('x', (50 + r * Math.cos(midAngle)).toFixed(2));
+        txt.setAttribute('y', (50 + r * Math.sin(midAngle)).toFixed(2));
+        txt.textContent = n;
+        txt.setAttribute('opacity', '1');
+      } else {
+        txt.setAttribute('opacity', '0');
+      }
+    }
+
+    // Legend count
+    const lbl = document.getElementById(`hn-${key}`);
+    if (lbl) lbl.textContent = n;
+    offset += arc + gap;
+  });
+  const dt = document.getElementById('donut-total');
+  if (dt) dt.textContent = total;
+}
+
+function animHero(val) {
+  const el = document.getElementById('hero-num');
+  const old = parseInt(el.textContent)||0;
+  if (old === val) return;
+  el.classList.add('pop');
+  setTimeout(() => { el.textContent = val; el.classList.remove('pop'); }, 160);
+}
+
+// ═══════════════════════════════
+// CRUD
+// ═══════════════════════════════
+function getFormData() {
+  return [
+    inputToDisplay(document.getElementById('f-date').value.trim()),
+    document.getElementById('f-site').value.trim(),
+    document.getElementById('f-hw-type').value.trim(),
+    document.getElementById('f-hw-version').value.trim(),
+    document.getElementById('f-node').value.trim(),
+    document.getElementById('f-status').value.trim(),
+    document.getElementById('f-remarks').value.trim()
+  ];
+}
+
+// Auto-submit on Enter when Node ID has no match in the table
+function onNodeKeydown(e) {
+  if (e.key !== 'Enter') return;
+  if (filteredRows.length === 0) {
+    submitForm();
+  }
+}
+
+function submitForm() {
+  const data = getFormData();
+  if (data.some(v => v === '')) { toast('All fields must be filled!','error'); return; }
+  const recs = getRecords();
+  recs.push(data);
+  saveRecords(recs);
+  populateDateFilter();
+  // Reset all filters so the new record is visible in the table
+  ['fl-date','fl-site','fl-hw-type','fl-hw-version','fl-status'].forEach(id => {
+    document.getElementById(id).value = 'All';
+  });
+  document.getElementById('fl-node').value = '';
+  document.getElementById('f-node').value    = '';
+  document.getElementById('f-remarks').value = '';
+  applyAndRender();
+  document.getElementById('f-node').focus();
+  toast('Record submitted!','success');
+}
+
+function updateRecord() {
+  if (selectedIdx === null) { toast('Select a row first!','warning'); return; }
+  const data = getFormData();
+  if (data.some(v => v === '')) { toast('All fields must be filled!','error'); return; }
+
+  const recs    = getRecords();
+  const origIdx = filteredOrigIdx[selectedIdx];  // direct index — no string comparison
+  if (origIdx === undefined) { toast('Record not found!','error'); return; }
+  recs[origIdx] = data;
+  saveRecords(recs);
+  populateDateFilter();
+  clearForm();
+  toast('Record updated!','info');
+}
+
+function deleteRecord() {
+  if (selectedIdx === null) { toast('Select a row first!','warning'); return; }
+  if (!confirm('Delete this record?')) return;
+
+  const recs    = getRecords();
+  const origIdx = filteredOrigIdx[selectedIdx];  // direct index — no string comparison
+  if (origIdx === undefined) { toast('Record not found!','error'); return; }
+  recs.splice(origIdx, 1);
+  saveRecords(recs);
+  populateDateFilter();
+  clearForm();
+  toast('Record deleted.','success');
+}
+
+function clearForm() {
+  document.getElementById('f-date').value       = todayInputStr();
+  document.getElementById('f-site').value       = '';
+  document.getElementById('f-hw-type').value    = '';
+  document.getElementById('f-hw-version').value = '';
+  document.getElementById('f-node').value       = '';
+  document.getElementById('f-status').value     = '';
+  document.getElementById('f-remarks').value    = '';
+  selectedIdx = null;
+  document.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('selected'));
+  applyAndRender();
+}
+
+function resetFilters() {
+  ['fl-date','fl-site','fl-hw-type','fl-hw-version','fl-status'].forEach(id => {
+    document.getElementById(id).value = 'All';
+  });
+  document.getElementById('fl-node').value = '';
+  selectedIdx = null;
+  applyAndRender();
+}
+
+// ═══════════════════════════════
+// Export CSV
+// ═══════════════════════════════
+function exportCSV() {
+  const recs = getRecords();
+  if (!recs.length) { toast('Nothing to export!','warning'); return; }
+  const hdr = ['Date','Site Name','HW Type','HW Version','Node ID','Status','Remarks'];
+  const csv = [hdr, ...recs].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  download(csv, 'Asset_Maintenance.csv', 'text/csv');
+  toast('Exported to CSV!','success');
+}
+
+// ═══════════════════════════════
+// Import CSV
+// ═══════════════════════════════
+function importCSV(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+    const rows  = lines.slice(1).map(l =>
+      l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"'))
+    ).filter(r => r.length >= 7);
+
+    if (!rows.length) { toast('No valid rows found in CSV!','error'); return; }
+
+    const existing = getRecords();
+    const merged   = [...existing, ...rows];
+    saveRecords(merged);
+    populateDateFilter();
+    applyAndRender();
+    toast(`Imported ${rows.length} record(s)!`,'success');
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+// ═══════════════════════════════
+// Download helper
+// ═══════════════════════════════
+function download(content, filename, type) {
+  const blob = new Blob([content], {type});
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {href:url, download:filename});
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════
+// Toast
+// ═══════════════════════════════
+const ICONS = { success:'check-circle', error:'circle-xmark', warning:'triangle-exclamation', info:'circle-info' };
+let toastTimer;
+
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.innerHTML = `<i class="fas fa-${ICONS[type]||'circle-info'}"></i> ${msg}`;
+  el.className = `toast t-${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ═══════════════════════════════
+// Settings
+// ═══════════════════════════════
+const SETTINGS_KEY = 'asset_maint_settings_v1';
+
+const SETTINGS_FIELDS = [
+  { key: 'siteName',  label: 'Site Name',  formId: 'f-site',       filterId: 'fl-site'       },
+  { key: 'hwType',    label: 'HW Type',    formId: 'f-hw-type',    filterId: 'fl-hw-type'    },
+  { key: 'hwVersion', label: 'HW Version', formId: 'f-hw-version', filterId: 'fl-hw-version' },
+  { key: 'status',    label: 'Status',     formId: 'f-status',     filterId: 'fl-status'     }
+];
+
+const DEFAULT_SETTINGS = {
+  siteName:  ['ACC_Jubail','Office'],
+  hwType:    ['Knob','Anchor','Gateway','Fob','ID_Card'],
+  hwVersion: ['Asset v3.6(Prod)','Asset v3.6(Safe)','Anchor_v2.2','Anchor_v2.3','Anchor_v2.4','RPI_3'],
+  status:    ['Issued_1','Issued_2','Scrap','Used in Office']
+};
+
+// Working copy used while modal is open
+let _settingsDraft = null;
+let _activeSettingsTab = 'siteName';
+
+function getSettings() {
+  const stored = localStorage.getItem(SETTINGS_KEY);
+  if (!stored) return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  return JSON.parse(stored);
+}
+
+function saveSettingsData(obj) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
+}
+
+function populateDropdownsFromSettings() {
+  const s = getSettings();
+  SETTINGS_FIELDS.forEach(({ key, formId, filterId }) => {
+    const vals = s[key] || DEFAULT_SETTINGS[key];
+
+    // Form select
+    const formSel = document.getElementById(formId);
+    if (formSel) {
+      const prev = formSel.value;
+      formSel.innerHTML = vals.map(v => `<option>${v}</option>`).join('');
+      if (vals.includes(prev)) formSel.value = prev;
+    }
+
+    // Filter select (keep "All" at top)
+    const filtSel = document.getElementById(filterId);
+    if (filtSel) {
+      const prev = filtSel.value;
+      filtSel.innerHTML = '<option value="All">All</option>' +
+        vals.map(v => `<option>${v}</option>`).join('');
+      filtSel.value = (prev === 'All' || vals.includes(prev)) ? prev : 'All';
+    }
+  });
+}
+
+function openSettings() {
+  _settingsDraft = getSettings();
+  _activeSettingsTab = 'siteName';
+  renderSettingsTabs();
+  renderSettingsBody(_activeSettingsTab);
+  document.getElementById('settings-modal').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('open');
+  _settingsDraft = null;
+}
+
+function renderSettingsTabs() {
+  const tabs = document.getElementById('settings-tabs');
+  tabs.innerHTML = SETTINGS_FIELDS.map(f => `
+    <button class="modal-tab ${_activeSettingsTab === f.key ? 'active' : ''}"
+            onclick="switchSettingsTab('${f.key}')">${f.label}</button>
+  `).join('');
+}
+
+function switchSettingsTab(key) {
+  _activeSettingsTab = key;
+  renderSettingsTabs();
+  renderSettingsBody(key);
+}
+
+function renderSettingsBody(key) {
+  const body = document.getElementById('settings-body');
+  const vals = _settingsDraft[key] || [];
+  const field = SETTINGS_FIELDS.find(f => f.key === key);
+  body.innerHTML = `
+    <div class="settings-add-row">
+      <input type="text" id="settings-new-val" class="form-control"
+             placeholder="Add new ${field.label} value…"
+             onkeydown="if(event.key==='Enter')addSettingValue('${key}')">
+      <button class="btn btn-submit" style="padding:0 14px;height:31px" onclick="addSettingValue('${key}')">
+        <i class="fas fa-plus"></i> Add
+      </button>
+    </div>
+    <div class="settings-chips">
+      ${vals.map(v => `
+        <div class="settings-chip">
+          ${v}
+          <button class="chip-del" onclick="removeSettingValue('${key}','${v.replace(/'/g,"\\'")}')">
+            <i class="fas fa-xmark"></i>
+          </button>
+        </div>`).join('')}
+      ${vals.length === 0 ? '<span style="color:var(--text-muted);font-size:12px">No values yet. Add one above.</span>' : ''}
+    </div>`;
+  setTimeout(() => {
+    const inp = document.getElementById('settings-new-val');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function addSettingValue(key) {
+  const inp = document.getElementById('settings-new-val');
+  const val = inp ? inp.value.trim() : '';
+  if (!val) { toast('Enter a value first!','warning'); return; }
+  if (_settingsDraft[key].includes(val)) { toast('Value already exists!','warning'); return; }
+  _settingsDraft[key].push(val);
+  renderSettingsBody(key);
+}
+
+function removeSettingValue(key, val) {
+  _settingsDraft[key] = _settingsDraft[key].filter(v => v !== val);
+  renderSettingsBody(key);
+}
+
+function applySettings() {
+  if (!_settingsDraft) return;
+  saveSettingsData(_settingsDraft);
+  populateDropdownsFromSettings();
+  closeSettings();
+  toast('Settings saved!', 'success');
+}
+
+// ═══════════════════════════════
+// Start
+// ═══════════════════════════════
+init();
+</script>
+</body>
+</html>
