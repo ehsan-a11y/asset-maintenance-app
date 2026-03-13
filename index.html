@@ -298,8 +298,42 @@
     .btn-clear  { background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; }
     .btn-reset  { background: linear-gradient(135deg, #374151, #6b7280); color: #fff; }
     .btn-export { background: linear-gradient(135deg, #5b21b6, #8b5cf6); color: #fff; }
-    .btn-excel  { background: linear-gradient(135deg, #065f46, #10b981); color: #fff; }
     .btn-import { background: linear-gradient(135deg, #0e7490, #06b6d4); color: #fff; }
+
+    /* ── Export dropdown ── */
+    .export-dropdown { position: relative; grid-column: 1 / -1; }
+    .export-menu {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 0; right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hi);
+      border-radius: 9px;
+      overflow: hidden;
+      display: none;
+      z-index: 500;
+      box-shadow: 0 -10px 28px rgba(0,0,0,0.5);
+    }
+    .export-menu.open { display: block; }
+    .export-menu button {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transition: background 0.15s;
+      letter-spacing: 0.2px;
+    }
+    .export-menu button:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .export-menu button:hover { background: var(--bg-panel); }
+    .export-menu button .menu-icon { font-size: 13px; width: 16px; text-align: center; }
 
     /* ── HW Checked Hero Card ── */
     .hero-card {
@@ -945,12 +979,19 @@
       <button class="btn btn-clear btn-full" onclick="clearForm()">
         <i class="fas fa-broom"></i> Clear
       </button>
-      <button class="btn btn-export" onclick="exportCSV()">
-        <i class="fas fa-file-csv"></i> CSV
-      </button>
-      <button class="btn btn-excel" onclick="exportExcel()">
-        <i class="fas fa-file-excel"></i> Excel
-      </button>
+      <div class="export-dropdown" id="export-dd">
+        <button class="btn btn-export btn-full" onclick="toggleExportMenu(event)">
+          <i class="fas fa-file-export"></i> Export CSV / Excel <i class="fas fa-chevron-up" style="font-size:9px;margin-left:4px"></i>
+        </button>
+        <div class="export-menu" id="export-menu">
+          <button onclick="exportCSV();closeExportMenu()">
+            <span class="menu-icon"><i class="fas fa-file-csv" style="color:#8b5cf6"></i></span> Export as CSV
+          </button>
+          <button onclick="exportExcel();closeExportMenu()">
+            <span class="menu-icon"><i class="fas fa-file-excel" style="color:#10b981"></i></span> Export as Excel
+          </button>
+        </div>
+      </div>
       <button class="btn btn-import btn-full" onclick="document.getElementById('import-input').click()">
         <i class="fas fa-file-import"></i> Import CSV / Excel
       </button>
@@ -1191,6 +1232,9 @@ function init() {
   populateDropdownsFromSettings();
   populateDateFilter();
   applyAndRender();
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#export-dd')) closeExportMenu();
+  });
 }
 
 // ═══════════════════════════════
@@ -1511,6 +1555,17 @@ function resetFilters() {
   document.getElementById('fl-node').value = '';
   selectedIdx = null;
   applyAndRender();
+}
+
+// ═══════════════════════════════
+// Export dropdown toggle
+// ═══════════════════════════════
+function toggleExportMenu(e) {
+  e.stopPropagation();
+  document.getElementById('export-menu').classList.toggle('open');
+}
+function closeExportMenu() {
+  document.getElementById('export-menu').classList.remove('open');
 }
 
 // ═══════════════════════════════
